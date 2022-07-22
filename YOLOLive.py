@@ -26,6 +26,7 @@ def plot_boxes(model, results, frame):
         # If score is less than 0.2 we avoid making a prediction.
         if row[4] < 0.2: 
             continue
+        #print(row[4])
         x1 = int(row[0]*x_shape)
         y1 = int(row[1]*y_shape)
         x2 = int(row[2]*x_shape)
@@ -39,14 +40,14 @@ def plot_boxes(model, results, frame):
         
     return frame
 
-cap = cv.VideoCapture('inputVideos/cubeWalkthrough.mp4')
+cap = cv.VideoCapture('inputVideos/cubeWalkthrough2.mp4')
 # Obtain frame size information using get() method
 frame_width = int(cap.get(3))
 frame_height = int(cap.get(4))
 frame_size = (frame_width,frame_height)
 FPS = 60
 # Initialize video writer object
-output = cv.VideoWriter('oputputVideos/output2.avi', cv.VideoWriter_fourcc('M','J','P','G'), FPS, frame_size)
+output = cv.VideoWriter('outputVideos/output3.avi', cv.VideoWriter_fourcc('M','J','P','G'), FPS, frame_size)
 while(cap.isOpened()):
     ret, frame = cap.read()
 
