@@ -2,13 +2,15 @@ import cv2 as cv
 import numpy as np
 import torch
 from time import time
+import math
 
 # Model
 #model = torch.hub.load('ultralytics/yolov5', 'yolov5s')
 model = torch.hub.load('ultralytics/yolov5', 'custom', path='best.pt')  # default
 
 # Images
-frame = cv.imread('inputVideos/powerCubes.jfif')
+frame = cv.imread('inputVideos/fixedBox.png')
+frame = cv.resize(frame, (960, 480))
 frame2 = frame[:, :, ::-1]  # OpenCV image (BGR to RGB)
 
 # Inference
@@ -34,6 +36,14 @@ def getLineLength(line):
 
     return pow((x1 - x0)**2 + (y1 - y0)**2, .5)
 
+def getHorizontalDistance(h, phi, theta, y, Y):
+
+    phi = math.radians(phi - theta / 2)
+    theta = math.radians(theta)
+    y = linearConstraint(Y, 0, y)
+
+    return h * math.tan(linearConstraint(math.radians(89.99999999999), 0, phi + theta * y / Y))
+
 
 def plot_boxes(model, results, frame):
 
@@ -42,7 +52,7 @@ def plot_boxes(model, results, frame):
     x_shape, y_shape = frame.shape[1], frame.shape[0]
     bluredFrame = cv.bilateralFilter(frame, 7, 50, 50) #blur spaces while keeping edges
     bluredFrame = cv.cvtColor(bluredFrame, cv.COLOR_BGR2HSV)
-    tol = 10
+    tol = 5
     threshold = cv.inRange(bluredFrame, (23-tol, 41-tol, 133-tol), (40+tol, 255, 255))
     bluredFrame = cv.bitwise_and(bluredFrame, bluredFrame, mask=threshold)
 
@@ -92,8 +102,7 @@ def plot_boxes(model, results, frame):
 
         miniFrame = cv.cvtColor(miniFrame, cv.COLOR_GRAY2BGR)
 
-        for cnt in contours:
-            cv.drawContours(miniFrame, [cnt], 0, (255, 0, 255), 1)
+        cv.drawContours(miniFrame, [contours[0]], 0, (255, 0, 255), 1)
 
         vertexLst = sorted(box, key=lambda x: x[1], reverse=True)
 
@@ -106,6 +115,11 @@ def plot_boxes(model, results, frame):
         cv.circle(miniFrame, second, 8, (255, 255, 0), -1)
         cv.circle(miniFrame, third, 8, (255, 255, 255), -1)
         cv.circle(miniFrame, fourth, 8, (255, 255, 255), -1)
+
+        dist1 = getHorizontalDistance(25, 80, 60, y_shape - (y1 + first[1]), y_shape) #height, angle fr vert, fov
+        dist2 = getHorizontalDistance(25, 80, 60, y_shape - (y1 + second[1]), y_shape)
+
+        print(f"Distance: ({dist1}, {dist2})")
 
         frame[y1:y2, x1:x2] = miniFrame
 
