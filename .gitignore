@@ -1,3 +1,4 @@
-inputVideos/
-outputVideos/
-freezeFrames/
+armVisionEnv/
+code/inputVideos/
+code/outputVideos/
+code/freezeFrames/
