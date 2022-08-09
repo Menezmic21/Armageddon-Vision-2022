@@ -5,7 +5,7 @@ from time import time
 import math
 
 # Model
-model = torch.hub.load('ultralytics/yolov5', 'custom', path='best.pt')  # default
+model = torch.hub.load('code/yolov5-6.1', 'custom', path='code/best.pt', source="local")  # default
 
 def score_frame(frame, model):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -13,8 +13,8 @@ def score_frame(frame, model):
     #frame = [torch.tensor(frame)]
     results = model([frame])
     #print(results)
-    labels = results.xyxyn[0][:, -1].numpy()
-    cord = results.xyxyn[0][:, :-1].numpy()
+    labels = results.xyxyn[0][:, -1].cpu().numpy()
+    cord = results.xyxyn[0][:, :-1].cpu().numpy()
     return labels, cord
 
 def linearConstraint(max, min, val):
@@ -72,7 +72,7 @@ def extractDirectDistance(row, frame):
     h = 25
     phi = 80
     theta1 = 34.3
-    y = y_shape - (y1 + y2) / 2
+    y = y_shape - max(y1, y2)
     Y = y_shape
     x = (x1 + x2) / 2 - x_shape /2
     X = x_shape / 2
@@ -124,14 +124,14 @@ def plot_boxes(model, results, frame):
         
     return frame
 
-cap = cv.VideoCapture('inputVideos/cubeWalkthrough2.mp4')
+cap = cv.VideoCapture('code/inputVideos/cubeWalkthrough2.mp4')
 # Obtain frame size information using get() method
 frame_width = int(cap.get(3))
 frame_height = int(cap.get(4))
 frame_size = (frame_width,frame_height)
 FPS = 60
 # Initialize video writer object
-output = cv.VideoWriter('outputVideos/output3.avi', cv.VideoWriter_fourcc('M','J','P','G'), FPS, frame_size)
+output = cv.VideoWriter('code/outputVideos/output3.avi', cv.VideoWriter_fourcc('M','J','P','G'), FPS, frame_size)
 init_time = time()
 while(cap.isOpened()):
     ret, frame = cap.read()

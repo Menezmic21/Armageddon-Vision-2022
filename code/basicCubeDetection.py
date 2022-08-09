@@ -5,20 +5,27 @@ from time import time
 import math
 
 # Model
-model = torch.hub.load('ultralytics/yolov5', 'custom', path='best.pt')  # default
+# model = torch.hub.load('ultralytics/yolov5', 'custom', path='best.pt')  # default
+model = torch.hub.load('code/yolov5-6.1', 'custom', path='code/best.pt', source="local")
 
 #Start total timer
 init_time = time()
 
 # Images
-frame = cv.imread('inputVideos/fixedBox.png')
+frame = cv.imread('code/inputVideos/fixedBox.png')
 frame = cv.resize(frame, (960, 480))
 frame2 = frame[:, :, ::-1]  # OpenCV image (BGR to RGB)
 
 # Inference
 results = model(frame2, size=640)  # includes NMS
-labels = results.xyxyn[0][:, -1].numpy()
-cord = results.xyxyn[0][:, :-1].numpy()
+labels = results.xyxyn[0][:, -1].cpu().numpy()
+cord = results.xyxyn[0][:, :-1].cpu().numpy()
+
+# device = 'cuda' if torch.cuda.is_available() else 'cpu'
+# model.to(device)
+# results = model(frame2, size=640)  # includes NMS
+# labels = results.xyxyn[0][:, -1].cpu().numpy()
+# cord = results.xyxyn[0][:, :-1].cpu().numpy()
 
 def linearConstraint(max, min, val):
 
@@ -110,7 +117,7 @@ def plot_boxes(model, results, frame):
         h = 25
         phi = 80
         theta1 = 34.3
-        y = y_shape - (y1 + y2) / 2
+        y = y_shape - max(y1, y2)
         Y = y_shape
         x = (x1 + x2) / 2 - x_shape /2
         X = x_shape / 2
