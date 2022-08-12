@@ -2,3 +2,5 @@ armVisionEnv/
 code/inputVideos/
 code/outputVideos/
 code/freezeFrames/
+.vscode
+.DS_STORE
