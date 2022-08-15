@@ -1,3 +1,4 @@
+# This file gets yaw and pitch residual and depth distance
 import cv2 as cv
 import numpy as np
 import threading
@@ -27,18 +28,18 @@ def main():
             notified = True
             condition.notify()
     
-    NetworkTables.initialize(server=ip)
-    NetworkTables.addConnectionListener(connection_listener, immediateNotify=True)
-    with condition:
-        if not notified:
-            condition.wait()
+#    NetworkTables.initialize(server=ip)
+#    NetworkTables.addConnectionListener(connection_listener, immediateNotify=True)
+#    with condition:
+#        if not notified:
+#            condition.wait()
 
     print("Connected to Network Tables")
-    ntinst = NetworkTablesInstance.getDefault()
-    tb = ntinst.getTable("cube_detection")
-    tb.getEntry("depthDistance").forceSetValue(1477)
-    tb.getEntry("pitchResidual").forceSetValue(1477)
-    tb.getEntry("yawResidual").forceSetValue(1477)
+#    ntinst = NetworkTablesInstance.getDefault()
+#    tb = ntinst.getTable("cube_detection")
+#    tb.getEntry("depthDistance").forceSetValue(1477)
+#    tb.getEntry("pitchResidual").forceSetValue(1477)
+#    tb.getEntry("yawResidual").forceSetValue(1477)
     
     width = resolution[0]*scale
     height = resolution[1]*scale
@@ -56,12 +57,12 @@ def main():
     while True:
         ret, frame = cap.read()
 
-        #frame = cv.flip(frame, 0)
+        frame = cv.flip(frame, 0)
 
         hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
-        lowerbound = np.array([20, 80, 130])
-        upperbound = np.array([60, 255, 255])
+        lowerbound = np.array([25, 85, 130])
+        upperbound = np.array([50, 255, 255])
 
         mask = cv.inRange(hsv, lowerbound, upperbound)
 
@@ -90,22 +91,22 @@ def main():
         meanX /= 4
         meanY /= 4
 
-        yawResidual = abs(meanX-width/2)*pixelDegree
-        pitchResidual = abs(meanY-height/2)*pixelDegree
+        yawResidual = (meanX-width/2)*pixelDegree
+        pitchResidual = (meanY-height/2)*pixelDegree
         
         pixelWidth = right-left
         distance = 0.0
         if (pixelWidth > 0):
             distance = boxWidth/2/tan(radians(pixelWidth*pixelDegree/2))
 
-        if cv.waitKey(1) & 0xFF == ord('w'):
+#        if cv.waitKey(1) & 0xFF == ord('w'):
             print("Screen Position:",meanX,meanY)
             print("Distance:", distance,"ft")
-            tb.getEntry("depthDistance").forceSetValue(distance)
+ #           tb.getEntry("depthDistance").forceSetValue(distance)
             print("Pitch Residual:", pitchResidual)
-            tb.getEntry("pitchResidual").forceSetValue(pitchResidual)
+  #          tb.getEntry("pitchResidual").forceSetValue(pitchResidual)
             print("Yaw Residual:", yawResidual)
-            tb.getEntry("yawResidual").forceSetValue(yawResidual)
+   #         tb.getEntry("yawResidual").forceSetValue(yawResidual)
         
         
         cv.drawContours(frame, [box], 0, (0, 0, 255), 3)

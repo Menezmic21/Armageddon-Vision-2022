@@ -1,3 +1,4 @@
+# Rewritten by Sri and Dawson, detects cubes pretty good
 import cv2 as cv
 import numpy as np
 import threading
