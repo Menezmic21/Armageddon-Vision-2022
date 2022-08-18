@@ -6,9 +6,13 @@ from networktables import NetworkTables, NetworkTablesInstance
 from math import tan, radians, sqrt
 
 diagonalFOV = 114.184
+
 resolution = (1280,720)
 scale = 0.7
+
 boxWidth = 13/12
+
+
 
 def main():
     team = 1477
@@ -62,37 +66,36 @@ def main():
 
         contours, _ = cv.findContours(mask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
         sorted_contours = sorted(contours, key=cv.contourArea, reverse=True)
-        if len(sorted_contours) != 0:
-            contour = sorted_contours[0]
-            area = cv.contourArea(contour)
-            if area > frame.shape[0] * frame.shape[1] * 0.05:
-                cv.drawContours(frame, [box], 0, (0, 0, 255), 3)  
-                rect = cv.minAreaRect(contour)  
-                box = cv.boxPoints(rect)
-                box = np.int0(box)
+        if len(sorted_contours) == 0:
+            continue
+        contour = sorted_contours[0]
 
-                left = width
-                right = 0
-                meanX = 0
-                meanY = 0
-                    
-                for x in box:
-                    if (x[0] > right):
-                        right = x[0]
-                    if (x[0] < left):
-                        left = x[0]   
-                    meanX += x[0]
-                    meanY += x[1]
-                meanX /= 4
-                meanY /= 4
+        rect = cv.minAreaRect(contour)  
+        box = cv.boxPoints(rect)
+        box = np.int0(box)
 
-                yawResidual = (meanX-width/2)*pixelDegree
-                pitchResidual = (meanY-height/2)*pixelDegree
-                    
-                pixelWidth = right-left
-                distance = 0.0
-                if (pixelWidth > 0):
-                    distance = boxWidth/2/tan(radians(pixelWidth*pixelDegree/2))
+        left = width
+        right = 0
+        meanX = 0
+        meanY = 0
+        
+        for x in box:
+            if (x[0] > right):
+                right = x[0]
+            if (x[0] < left):
+                left = x[0]   
+            meanX += x[0]
+            meanY += x[1]
+        meanX /= 4
+        meanY /= 4
+
+        yawResidual = (meanX-width/2)*pixelDegree
+        pitchResidual = (meanY-height/2)*pixelDegree
+        
+        pixelWidth = right-left
+        distance = 0.0
+        if (pixelWidth > 0):
+            distance = boxWidth/2/tan(radians(pixelWidth*pixelDegree/2))
 
             print("Screen Position:",meanX,meanY)
             print("Distance:", distance,"ft")
@@ -101,17 +104,17 @@ def main():
             tb.getEntry("pitchResidual").forceSetValue(pitchResidual)
             print("Yaw Residual:", yawResidual)
             tb.getEntry("yawResidual").forceSetValue(yawResidual)
-            
-            
-            cv.drawContours(frame, [box], 0, (0, 0, 255), 3)
-            cv.imshow("frame", frame)
-            
-            if cv.waitKey(1) & 0xFF == ord('q'):
-                break
-
-        cap.release()
-        cv.destroyAllWindows()
         
+        
+        cv.drawContours(frame, [box], 0, (0, 0, 255), 3)
+        cv.imshow("frame", frame)
+        
+        if cv.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv.destroyAllWindows()
+    
   
 
 if __name__ == "__main__":
