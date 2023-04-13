@@ -5,8 +5,6 @@ import cv2
 
 net = cv2.dnn.readNet('best.onnx')
 
-print("ASYDGIHASFUDAIUH")
-
 # step 2 - feed a 640x640 image to get predictions
 
 def format_yolov5(frame):
